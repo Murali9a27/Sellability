@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-
+import Image from "next/image";
+import { ArrowRight, Menu, X } from "lucide-react";
+import Button from "./Button";
 const navLinks = [
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
@@ -18,29 +20,14 @@ const Logo = () => (
     aria-label="Sellability home"
   >
     <div className="flex items-end">
-      <span className="text-white font-extrabold tracking-tight text-2xl md:text-[26px]">
-        SELLAB
-      </span>
-      {/* Stylized bar chart replacing "ILI" */}
-      <span
-        className="flex items-end gap-[3px] mx-[3px] pb-[3px]"
-        aria-hidden="true"
-      >
-        <span className="block w-[4px] h-[14px] bg-white rounded-[1px]" />
-        <span className="block w-[4px] h-[22px] bg-[#E94E2B] rounded-[1px]" />
-        <span className="block w-[4px] h-[18px] bg-white rounded-[1px]" />
-      </span>
-      <span className="text-white font-extrabold tracking-tight text-2xl md:text-[26px]">
-        TY
-      </span>
-      <sup className="text-white text-[10px] md:text-xs font-semibold ml-0.5 mt-1">
-        TM
-      </sup>
+      <Image
+        src="/images/sellability-wht-logo.png"
+        alt="Sellability Logo"
+        width={150}
+        height={40}
+        className="h-10 w-auto"
+      />
     </div>
-    <span className="text-white text-[9px] md:text-[10px] font-bold tracking-[0.28em] mt-1">
-      UNLOCKING GROWTH
-    </span>
-    <img src="/images/sellability-wht-logo.png" alt="Sellability Logo" />
   </Link>
 );
 
@@ -71,51 +58,29 @@ export default function Header() {
           </nav>
 
           {/* Desktop CTA */}
-          <a
-            href="#book"
-            className="hidden lg:inline-flex items-center justify-center bg-[#E94E2B] hover:bg-[#d43e1d] transition-colors duration-200 text-white text-sm font-semibold tracking-wide px-6 py-4 whitespace-nowrap"
-          >
-            BOOK A CONSULTATION
-          </a>
+          <div className="hidden lg:block">
+            <Button
+              href="/contact"
+              icon={<ArrowRight size={18} />}
+              iconPosition="right"
+            >
+              Unlock Growth
+            </Button>
+          </div>
 
           {/* Mobile menu button */}
           <button
             type="button"
-            onClick={() => setIsOpen((o) => !o)}
-            className="lg:hidden inline-flex items-center justify-center p-2 text-white hover:text-[#E94E2B] transition-colors"
+            onClick={() => setIsOpen((prev) => !prev)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/10 text-white transition-all duration-300 hover:border-[#E94E2B] hover:text-[#E94E2B] lg:hidden"
             aria-expanded={isOpen}
             aria-controls="mobile-menu"
             aria-label="Toggle navigation menu"
           >
             {isOpen ? (
-              // Close (X) icon
-              <svg
-                className="h-7 w-7"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <X className="h-6 w-6" strokeWidth={2.2} />
             ) : (
-              // Hamburger icon
-              <svg
-                className="h-7 w-7"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              <Menu className="h-6 w-6" strokeWidth={2.2} />
             )}
           </button>
         </div>
@@ -123,11 +88,13 @@ export default function Header() {
         {/* Mobile menu */}
         <div
           id="mobile-menu"
-          className={`lg:hidden overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-            isOpen ? "max-h-96 opacity-100 pb-6" : "max-h-0 opacity-0"
+          className={`lg:hidden fixed left-0 right-0 top-20 z-40 bg-black/95 backdrop-blur-md border-b border-white/10 transition-all duration-300 ease-in-out ${
+            isOpen
+              ? "opacity-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 -translate-y-4 pointer-events-none"
           }`}
         >
-          <nav className="flex flex-col gap-1 pt-2" aria-label="Mobile">
+          <nav className="flex flex-col gap-1 px-4 py-6" aria-label="Mobile">
             {navLinks.map((link) => (
               <a
                 key={link.label}
@@ -138,13 +105,16 @@ export default function Header() {
                 {link.label}
               </a>
             ))}
-            <a
-              href="#book"
-              onClick={() => setIsOpen(false)}
-              className="mt-3 inline-flex items-center justify-center bg-[#E94E2B] hover:bg-[#d43e1d] transition-colors text-white text-sm font-semibold tracking-wide px-6 py-4"
-            >
-              BOOK A CONSULTATION
-            </a>
+
+            <div className="mt-3">
+              <Button
+                href="#book"
+                className="w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                Book a Consultation
+              </Button>
+            </div>
           </nav>
         </div>
       </div>

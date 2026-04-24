@@ -67,3 +67,46 @@ a:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: #3a3a3a;
 }
+
+
+
+
+
+
+/* Custom animations */
+.mag-btn {
+  position: relative;
+  overflow: hidden;
+  transition: color 0.35s ease;
+}
+
+.mag-btn:hover {
+  color: #ffffff;
+}
+
+.mag-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #E25C2D;
+  transform: translateX(-102%);
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0, 1);
+  z-index: 0;
+}
+
+.mag-btn:hover::before {
+  transform: translateX(0);
+}
+
+.mag-btn__content,
+.mag-btn__icon,
+.mag-btn__text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Transparent Variant */
+
+.mag-btn--transparent::before {
+  background: rgba(255,255,255,0.12);
+}
