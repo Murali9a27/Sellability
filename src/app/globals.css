@@ -110,3 +110,22 @@ a:hover {
 .mag-btn--transparent::before {
   background: rgba(255,255,255,0.12);
 }
+
+
+/* Logo Marquee Animation */
+@keyframes logo-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.logo-marquee {
+  animation: logo-marquee 4s linear infinite;
+}
+
+.logo-marquee:hover {
+  animation-play-state: paused;
+}
