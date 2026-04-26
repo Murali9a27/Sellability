@@ -1,8 +1,14 @@
 import Link from "next/link";
 import HeroSlider from "@/components/sliders/HeroSlider";
 import LogoSlider from "@/components/sliders/LogoSlider";
+import ProjectGallerySlider from "@/components/sliders/ProjectGallerySlider";
 
-export default function HomePage() {
+import { getProjects } from "@/lib/wordpress";
+
+export default async function HomePage() {
+  const projects = await getProjects();
+
+  const featuredProject = projects[0];
   return (
     <>
       <HeroSlider />
@@ -13,6 +19,7 @@ export default function HomePage() {
         <Link href="/projects">View Projects</Link>
       </main>
       <LogoSlider />
+      {featuredProject && <ProjectGallerySlider project={featuredProject} />}
     </>
   );
 }

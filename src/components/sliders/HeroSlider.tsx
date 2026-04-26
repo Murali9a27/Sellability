@@ -79,12 +79,14 @@ export default function HeroSlider() {
 
   return (
     <BaseSlider
-      slides={slides}
-      autoPlay={true}
-      interval={2000}
-      showArrows={false}
-      showDots={false}
-      className="w-full"
-    />
+    slides={slides}
+    autoPlay={true}
+    interval={2000}
+    duration={800}
+    perView={{ mobile: 1, tablet: 1, desktop: 1 }}
+    showArrows={false}
+    showDots={false}
+    className="w-full"
+  />
   );
 }
