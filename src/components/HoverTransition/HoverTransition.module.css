@@ -1,0 +1,220 @@
+/**
+ * HoverTransition — CSS Module
+ * All six effects, scoped class names.
+ */
+
+@property --htw-dot-size {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 100%;
+}
+
+.wrap {
+    display: block;
+    width: 100%;
+}
+
+.canvas {
+    --htw-speed: 0.85s;
+    position: relative;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1a1a1a;
+}
+
+.base,
+.top {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.caption {
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: inherit;
+}
+
+/* ============================================================
+   01 · RIBBON SLICE
+   ============================================================ */
+.ribbon .strip {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background-image: var(--htw-old);
+    background-size: var(--htw-bg-size);
+    background-position: var(--htw-bg-pos) center;
+    background-repeat: no-repeat;
+    transition: transform var(--htw-speed) cubic-bezier(0.7, 0, 0.2, 1);
+    transition-delay: var(--htw-delay);
+    will-change: transform;
+}
+.canvas.ribbon:hover .strip,
+.canvas.ribbon.active .strip {
+    transform: translateY(var(--htw-dir));
+}
+
+/* ============================================================
+   02 · DOT MATRIX
+   ============================================================ */
+.dots .top {
+    --htw-dot-size: 100%;
+    -webkit-mask-image: radial-gradient(
+        circle at center,
+        black var(--htw-dot-size),
+        transparent calc(var(--htw-dot-size) + 0.5%)
+    );
+    mask-image: radial-gradient(
+        circle at center,
+        black var(--htw-dot-size),
+        transparent calc(var(--htw-dot-size) + 0.5%)
+    );
+    -webkit-mask-size: 26px 26px;
+    mask-size: 26px 26px;
+    transition: --htw-dot-size var(--htw-speed) cubic-bezier(0.65, 0, 0.35, 1);
+}
+.canvas.dots:hover .top,
+.canvas.dots.active .top {
+    --htw-dot-size: 0%;
+}
+
+/* ============================================================
+   03 · CURTAIN SPLIT
+   ============================================================ */
+.curtain {
+    perspective: 1200px;
+}
+.curtain .half {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background-image: var(--htw-old);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    backface-visibility: hidden;
+    transition: transform var(--htw-speed) cubic-bezier(0.6, 0, 0.3, 1);
+    will-change: transform;
+}
+.curtain .halfL {
+    left: 0;
+    background-position: left center;
+    transform-origin: left center;
+}
+.curtain .halfR {
+    right: 0;
+    background-position: right center;
+    transform-origin: right center;
+}
+.canvas.curtain:hover .halfL,
+.canvas.curtain.active .halfL {
+    transform: rotateY(-108deg);
+}
+.canvas.curtain:hover .halfR,
+.canvas.curtain.active .halfR {
+    transform: rotateY(108deg);
+}
+
+/* ============================================================
+   04 · MOSAIC FLIP
+   ============================================================ */
+.mosaic .grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--htw-cols, 6), 1fr);
+    grid-template-rows: repeat(var(--htw-rows, 6), 1fr);
+    perspective: 1000px;
+}
+.mosaic .tile {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform var(--htw-speed) cubic-bezier(0.7, 0, 0.3, 1);
+    transition-delay: var(--htw-d);
+    will-change: transform;
+}
+.mosaic .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    background-size: calc(var(--htw-cols, 6) * 100%) calc(var(--htw-rows, 6) * 100%);
+    background-repeat: no-repeat;
+}
+.mosaic .face.front {
+    background-image: var(--htw-old);
+}
+.mosaic .face.back {
+    background-image: var(--htw-new);
+    transform: rotateY(180deg);
+}
+.canvas.mosaic:hover .tile,
+.canvas.mosaic.active .tile {
+    transform: rotateY(180deg);
+}
+
+/* ============================================================
+   05 · WAVE SWEEP
+   ============================================================ */
+.wave .strip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background-image: var(--htw-old);
+    background-size: var(--htw-bg-size);
+    background-position: 0 var(--htw-bg-pos);
+    background-repeat: no-repeat;
+    transform: translateX(0);
+    transition: transform var(--htw-speed) cubic-bezier(0.7, 0, 0.2, 1);
+    transition-delay: var(--htw-delay);
+    will-change: transform;
+}
+.canvas.wave:hover .strip,
+.canvas.wave.active .strip {
+    transform: translateX(101%);
+}
+
+/* ============================================================
+   06 · SHUTTER BLINDS
+   ============================================================ */
+.shutter {
+    perspective: 1200px;
+}
+.shutter .slat {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background-image: var(--htw-old);
+    background-size: var(--htw-bg-size);
+    background-position: 0 var(--htw-bg-pos);
+    background-repeat: no-repeat;
+    transform-origin: center;
+    transform: rotateX(0deg);
+    transition: transform var(--htw-speed) cubic-bezier(0.65, 0, 0.35, 1);
+    transition-delay: var(--htw-delay);
+    backface-visibility: hidden;
+    will-change: transform;
+}
+.canvas.shutter:hover .slat,
+.canvas.shutter.active .slat {
+    transform: rotateX(92deg);
+}
+
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .canvas .strip,
+    .canvas .slat,
+    .canvas .half,
+    .canvas .tile,
+    .canvas .top {
+        transition-duration: 0.15s !important;
+        transition-delay: 0s !important;
+    }
+}

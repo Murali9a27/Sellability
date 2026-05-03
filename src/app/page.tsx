@@ -5,6 +5,11 @@ import ProjectGallerySlider from "@/components/sliders/ProjectGallerySlider";
 import TestimonialSlider from "@/components/sliders/TestimonialSlider";
 
 import { getProjects } from "@/lib/wordpress";
+import TestimonialCarousel from "@/components/sliders/TestimonialCarousel";
+import ImpactMapSection from "@/components/sections/ImpactMapSection";
+import RealEstateRhythmSection from "@/components/sections/RealEstateRhythmSection";
+import { HoverTransition, type HoverEffect } from '@/components/HoverTransition';
+
 
 export default async function HomePage() {
   const projects = await getProjects();
@@ -19,8 +24,11 @@ export default async function HomePage() {
 
         <Link href="/projects">View Projects</Link>
       </main>
+      <RealEstateRhythmSection />
+      <ImpactMapSection/>
       <LogoSlider />
       <TestimonialSlider />
+      <TestimonialCarousel />
       {featuredProject && <ProjectGallerySlider project={featuredProject} />}
     </>
   );
