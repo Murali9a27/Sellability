@@ -8,8 +8,10 @@ import { getProjects } from "@/lib/wordpress";
 import TestimonialCarousel from "@/components/sliders/TestimonialCarousel";
 import ImpactMapSection from "@/components/sections/ImpactMapSection";
 import RealEstateRhythmSection from "@/components/sections/RealEstateRhythmSection";
-import { HoverTransition, type HoverEffect } from '@/components/HoverTransition';
-
+import {
+  HoverTransition,
+  type HoverEffect,
+} from "@/components/HoverTransition";
 
 export default async function HomePage() {
   const projects = await getProjects();
@@ -24,8 +26,61 @@ export default async function HomePage() {
 
         <Link href="/projects">View Projects</Link>
       </main>
+
+      <div className="grid grid-cols-3 grid-rows-2 gap-4">
+        <div className="bg-blue-300 w-[200px] h-[200px]">
+          <HoverTransition
+            className="w-[200px] h-[200px]"
+            effect="ribbon"
+            beforeImage="/images/sections/bunglow-1.jpg"
+            afterImage="/images/clients/Bishnoi-Kalamkar.png"
+          />
+        </div>
+        <div className="bg-blue-300 w-[200px] h-[200px]">
+          <HoverTransition
+            className="w-[200px] h-[200px]"
+            effect="dots"
+            beforeImage="/images/sections/bunglow-1.jpg"
+            afterImage="/images/clients/Bishnoi-Kalamkar.png"
+          />
+        </div>
+        <div className="bg-blue-300 w-[200px] h-[200px]">
+          <HoverTransition
+            className="w-[200px] h-[200px]"
+            effect="curtain"
+            beforeImage="/images/sections/bunglow-1.jpg"
+            afterImage="/images/clients/Bishnoi-Kalamkar.png"
+          />
+        </div>
+        <div className="bg-blue-300 w-[200px] h-[200px]">
+          <HoverTransition
+            className="w-[200px] h-[200px]"
+            effect="mosaic"
+            beforeImage="/images/sections/bunglow-1.jpg"
+            afterImage="/images/clients/Bishnoi-Kalamkar.png"
+          />
+        </div>
+        <div className="bg-blue-300 w-[200px] h-[200px]">
+          <HoverTransition
+            className="w-[200px] h-[200px]"
+            effect="wave"
+            beforeImage="/images/sections/bunglow-1.jpg"
+            afterImage="/images/clients/Bishnoi-Kalamkar.png"
+          />
+        </div>
+        <div className="bg-blue-300 w-[200px] h-[200px]">
+          <HoverTransition
+            className="w-[200px] h-[200px]"
+            effect="shutter"
+            beforeImage="/images/sections/bunglow-1.jpg"
+            afterImage="/images/clients/Bishnoi-Kalamkar.png"
+          />
+        </div>
+        
+      </div>
+
       <RealEstateRhythmSection />
-      <ImpactMapSection/>
+      <ImpactMapSection />
       <LogoSlider />
       <TestimonialSlider />
       <TestimonialCarousel />
