@@ -1,4 +1,10 @@
+import { getCache, setCache } from "@/lib/cache";
+
 const BASE_URL = "https://sellability.brandaura.in/wp-json/wp/v2";
+
+/* =========================
+   TYPES
+========================= */
 
 export type WpRendered = {
   rendered: string;
@@ -56,31 +62,71 @@ export type WpProject = {
   acf?: ProjectAcf;
 };
 
+/* =========================
+   CORE FETCH (WITH REDIS)
+========================= */
+
 async function fetchJson<T>(url: string): Promise<T> {
+  // Clean readable cache key
+  const key = `wp:${url.replace(BASE_URL, "")}`;
+
+  // 1. Check Redis
+  const cached = await getCache<T>(key);
+  if (cached) {
+    console.log("✅ Redis HIT:", key);
+    return cached;
+  }
+
+  console.log("❌ Redis MISS:", key);
+
+  // 2. Fetch from WordPress
   const res = await fetch(url, {
-    next: { revalidate: 60 },
+    next: { revalidate: 60 }, // Next.js cache layer
   });
 
   if (!res.ok) {
     throw new Error(`Request failed: ${res.status} ${res.statusText}`);
   }
 
-  return res.json();
+  const data: T = await res.json();
+
+  // 3. Dynamic TTL
+  const ttl = url.includes("/media")
+    ? 3600 // media rarely changes
+    : url.includes("slug=")
+      ? 300 // single project
+      : 600; // list
+
+  await setCache(key, data, ttl);
+
+  return data;
 }
+
+/* =========================
+   PROJECT APIs
+========================= */
 
 export async function getProjects(): Promise<WpProject[]> {
   return fetchJson<WpProject[]>(`${BASE_URL}/projects`);
 }
 
-export async function getProjectBySlug(slug: string): Promise<WpProject | null> {
+export async function getProjectBySlug(
+  slug: string,
+): Promise<WpProject | null> {
   const data = await fetchJson<WpProject[]>(
-    `${BASE_URL}/projects?slug=${encodeURIComponent(slug)}`
+    `${BASE_URL}/projects?slug=${encodeURIComponent(slug)}`,
   );
 
   return data[0] ?? null;
 }
 
-export async function getMediaById(id?: number | null): Promise<WpMedia | null> {
+/* =========================
+   MEDIA (OPTIMIZED)
+========================= */
+
+export async function getMediaById(
+  id?: number | null,
+): Promise<WpMedia | null> {
   if (!id) return null;
 
   try {
@@ -89,6 +135,10 @@ export async function getMediaById(id?: number | null): Promise<WpMedia | null> 
     return null;
   }
 }
+
+/* =========================
+   HELPERS
+========================= */
 
 export function stripHtml(html = ""): string {
   return html.replace(/<[^>]*>/g, "").trim();
@@ -109,7 +159,7 @@ export function formatLabel(value?: string): string {
 
 export function getImageUrl(
   media: WpMedia | null,
-  size: "thumbnail" | "medium" | "full" = "full"
+  size: "thumbnail" | "medium" | "full" = "full",
 ): string | null {
   if (!media) return null;
 
@@ -117,7 +167,9 @@ export function getImageUrl(
     return media.source_url || null;
   }
 
-  return media.media_details?.sizes?.[size]?.source_url || media.source_url || null;
+  return (
+    media.media_details?.sizes?.[size]?.source_url || media.source_url || null
+  );
 }
 
 export function getHighlights(text?: string): string[] {
