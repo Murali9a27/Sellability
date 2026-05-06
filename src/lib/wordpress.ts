@@ -1,4 +1,4 @@
-import { getCache, setCache } from "@/lib/cache";
+import { getCache, setCache } from '@/lib/cache';
 
 const BASE_URL = "https://sellability.brandaura.in/wp-json/wp/v2";
 
@@ -10,92 +10,67 @@ export type WpRendered = {
   rendered: string;
 };
 
-export type WpMedia = {
-  id: number;
-  source_url?: string;
-  alt_text?: string;
-  title?: WpRendered;
-  media_details?: {
-    sizes?: Record<
-      string,
-      {
-        source_url?: string;
-      }
-    >;
-  };
-};
-
 export type ProjectAcf = {
   project_type?: string;
   project_status?: string;
-  project_tagline?: string;
   starting_price?: number;
-  price_on_request?: boolean;
-  locality?: string;
   city?: string;
-  google_map_url?: string | null;
   configuration?: string;
-  area_size?: number;
-  area_unit?: string;
-  project_highlights?: string;
   amenities?: string[];
-  project_image_1?: number | null;
-  project_image_2?: number | null;
-  project_image_3?: number | null;
-  project_image_4?: number | null;
-  brochure_pdf?: number | null;
-  developer_name?: string;
-  rera_number?: string;
-  cta_text?: string;
-  phone_number?: string;
-  whatsapp_number?: string;
 };
 
 export type WpProject = {
   id: number;
   slug: string;
-  link?: string;
   title?: WpRendered;
   excerpt?: WpRendered;
-  content?: WpRendered;
   featured_media?: number;
   acf?: ProjectAcf;
 };
 
 /* =========================
-   CORE FETCH (WITH REDIS)
+   FILTER TYPE
+========================= */
+
+export type ProjectFilters = {
+  city?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  status?: string;
+  type?: string;
+  page?: number;
+  perPage?: number;
+};
+
+/* =========================
+   CORE FETCH (REDIS)
 ========================= */
 
 async function fetchJson<T>(url: string): Promise<T> {
-  // Clean readable cache key
-  const key = `wp:${url.replace(BASE_URL, "")}`;
+  const key = `wp:${url.replace(BASE_URL, '')}`;
 
-  // 1. Check Redis
   const cached = await getCache<T>(key);
   if (cached) {
-    console.log("✅ Redis HIT:", key);
+    console.log('✅ HIT:', key);
     return cached;
   }
 
-  console.log("❌ Redis MISS:", key);
+  console.log('❌ MISS:', key);
 
-  // 2. Fetch from WordPress
   const res = await fetch(url, {
-    next: { revalidate: 60 }, // Next.js cache layer
+    next: { revalidate: 60 },
   });
 
   if (!res.ok) {
-    throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+    throw new Error(`Request failed: ${res.status}`);
   }
 
   const data: T = await res.json();
 
-  // 3. Dynamic TTL
-  const ttl = url.includes("/media")
-    ? 3600 // media rarely changes
-    : url.includes("slug=")
-      ? 300 // single project
-      : 600; // list
+  const ttl =
+    url.includes('slug=') ? 300 :
+    url.includes('page=') ? 300 :
+    600;
 
   await setCache(key, data, ttl);
 
@@ -103,37 +78,98 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 /* =========================
-   PROJECT APIs
+   BASE PROJECT FETCH
 ========================= */
 
 export async function getProjects(): Promise<WpProject[]> {
   return fetchJson<WpProject[]>(`${BASE_URL}/projects`);
 }
 
-export async function getProjectBySlug(
-  slug: string,
-): Promise<WpProject | null> {
+export async function getProjectBySlug(slug: string) {
   const data = await fetchJson<WpProject[]>(
-    `${BASE_URL}/projects?slug=${encodeURIComponent(slug)}`,
+    `${BASE_URL}/projects?slug=${encodeURIComponent(slug)}`
   );
 
   return data[0] ?? null;
 }
 
 /* =========================
-   MEDIA (OPTIMIZED)
+   FILTERED PROJECTS (CORE)
 ========================= */
 
-export async function getMediaById(
-  id?: number | null,
-): Promise<WpMedia | null> {
-  if (!id) return null;
+export async function getProjectsWithFilters(
+  filters: ProjectFilters
+): Promise<WpProject[]> {
+  const {
+    city,
+    minPrice,
+    maxPrice,
+    status,
+    type,
+    page = 1,
+    perPage = 10,
+  } = filters;
 
-  try {
-    return await fetchJson<WpMedia>(`${BASE_URL}/media/${id}`);
-  } catch {
-    return null;
-  }
+  const params = new URLSearchParams();
+
+  params.append('page', String(page));
+  params.append('per_page', String(perPage));
+
+  // ACF filters (requires WP support or custom endpoint)
+  if (city) params.append('acf[city]', city);
+  if (status) params.append('acf[project_status]', status);
+  if (type) params.append('acf[project_type]', type);
+
+  if (minPrice) params.append('acf[starting_price][>=]', String(minPrice));
+  if (maxPrice) params.append('acf[starting_price][<=]', String(maxPrice));
+
+  const url = `${BASE_URL}/projects?${params.toString()}`;
+
+  return fetchJson<WpProject[]>(url);
+}
+
+/* =========================
+   FEATURED PROJECTS
+========================= */
+
+export async function getFeaturedProjects(): Promise<WpProject[]> {
+  // assuming you mark featured via ACF
+  const url = `${BASE_URL}/projects?acf[featured]=true`;
+
+  return fetchJson<WpProject[]>(url);
+}
+
+/* =========================
+   CITY BASED
+========================= */
+
+export async function getProjectsByCity(city: string) {
+  return getProjectsWithFilters({ city });
+}
+
+/* =========================
+   PRICE RANGE
+========================= */
+
+export async function getProjectsByPrice(
+  min: number,
+  max: number
+) {
+  return getProjectsWithFilters({
+    minPrice: min,
+    maxPrice: max,
+  });
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+export async function getProjectsPaginated(
+  page: number,
+  perPage: number = 10
+) {
+  return getProjectsWithFilters({ page, perPage });
 }
 
 /* =========================
@@ -153,30 +189,6 @@ export function formatLabel(value?: string): string {
   if (!value) return "";
   return value
     .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
-}
-
-export function getImageUrl(
-  media: WpMedia | null,
-  size: "thumbnail" | "medium" | "full" = "full",
-): string | null {
-  if (!media) return null;
-
-  if (size === "full") {
-    return media.source_url || null;
-  }
-
-  return (
-    media.media_details?.sizes?.[size]?.source_url || media.source_url || null
-  );
-}
-
-export function getHighlights(text?: string): string[] {
-  if (!text) return [];
-
-  return text
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
