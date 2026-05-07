@@ -1,42 +1,60 @@
-import Link from "next/link";
-import {
-  getProjects,
-  stripHtml,
-  formatPrice,
-} from "@/lib/wordpress";
+import ProjectFilters from '@/components/sections/ProjectFilters';
+import ProjectList from '@/components/sections/ProjectList';
+import { getProjects } from '@/lib/wordpress';
 
-export default async function ProjectsPage() {
-  const projects = await getProjects();
+type Props = {
+  searchParams: {
+    city?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    type?: string;
+    status?: string;
+  };
+};
+
+export default async function ProjectsPage({ searchParams }: Props) {
+  const allProjects = await getProjects();
+
+  // 🔥 Filter on server (important)
+  const filtered = allProjects.filter((p) => {
+    const acf = p.acf;
+
+    if (searchParams.city && acf?.city !== searchParams.city) return false;
+
+    if (searchParams.type && acf?.project_type !== searchParams.type)
+      return false;
+
+    if (searchParams.status && acf?.project_status !== searchParams.status)
+      return false;
+
+    if (
+      searchParams.minPrice &&
+      (acf?.starting_price || 0) < Number(searchParams.minPrice)
+    )
+      return false;
+
+    if (
+      searchParams.maxPrice &&
+      (acf?.starting_price || 0) > Number(searchParams.maxPrice)
+    )
+      return false;
+
+    return true;
+  });
 
   return (
-    <main style={{ padding: "40px" }}>
-      <h1>Projects</h1>
-      <br />
+    <div className="grid grid-cols-4 gap-6 p-6">
 
-      {projects.map((project) => {
-        const acf = project.acf || {};
+      {/* Sidebar */}
+      <div className="col-span-1">
+        <ProjectFilters />
+      </div>
 
-        return (
-          <div
-            key={project.id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "20px",
-              marginBottom: "20px",
-            }}
-          >
-            <Link href={`/projects/${project.slug}`}>
-              <h2>{project.title?.rendered}</h2>
-            </Link>
+      {/* Results */}
+      <div className="col-span-3">
+        <ProjectList projects={filtered} />
+      </div>
 
-            <p>{stripHtml(project.excerpt?.rendered || "")}</p>
-
-            {acf.starting_price && (
-              <p>₹ {formatPrice(acf.starting_price)}</p>
-            )}
-          </div>
-        );
-      })}
-    </main>
+    </div>
   );
 }

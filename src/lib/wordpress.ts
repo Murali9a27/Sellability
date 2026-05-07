@@ -28,6 +28,19 @@ export type WpProject = {
   acf?: ProjectAcf;
 };
 
+export type WpMedia = {
+  id: number;
+  source_url?: string;
+  alt_text?: string;
+  media_details?: {
+    sizes?: Record<
+      string,
+      {
+        source_url?: string;
+      }
+    >;
+  };
+};
 /* =========================
    FILTER TYPE
 ========================= */
@@ -191,4 +204,40 @@ export function formatLabel(value?: string): string {
     .split("_")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
+}
+
+export function getImageUrl(
+  media: WpMedia | null,
+  size: "thumbnail" | "medium" | "full" = "full"
+): string | null {
+  if (!media) return null;
+
+  if (size === "full") {
+    return media.source_url || null;
+  }
+
+  return (
+    media.media_details?.sizes?.[size]?.source_url ||
+    media.source_url ||
+    null
+  );
+}
+
+export async function getMediaById(
+  id?: number | null
+): Promise<WpMedia | null> {
+  if (!id) return null;
+
+  try {
+    const res = await fetch(
+      `${BASE_URL}/media/${id}`,
+      { next: { revalidate: 3600 } }
+    );
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
