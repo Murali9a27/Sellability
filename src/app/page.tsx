@@ -12,6 +12,7 @@ import {
   HoverTransition,
   type HoverEffect,
 } from "@/components/HoverTransition";
+import PropertyNavigator from "@/components/sections/PropertyNavigator";
 
 export default async function HomePage() {
   const projects = await getProjects();
@@ -26,7 +27,7 @@ export default async function HomePage() {
 
         <Link href="/projects">View Projects</Link>
       </main>
-
+      <PropertyNavigator />
       <div className="grid grid-cols-3 grid-rows-2 gap-4">
         <div className="bg-blue-300 w-[200px] h-[200px]">
           <HoverTransition
