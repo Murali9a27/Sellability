@@ -13,6 +13,7 @@ import {
   type HoverEffect,
 } from "@/components/HoverTransition";
 import PropertyNavigator from "@/components/sections/PropertyNavigator";
+import GlowButton from "@/components/common/GlowButton";
 
 export default async function HomePage() {
   const projects = await getProjects();
@@ -85,6 +86,7 @@ export default async function HomePage() {
       <LogoSlider />
       <TestimonialSlider />
       <TestimonialCarousel />
+      <GlowButton className="mt-8">Explore More</GlowButton>
       {featuredProject && <ProjectGallerySlider project={featuredProject} />}
     </>
   );
